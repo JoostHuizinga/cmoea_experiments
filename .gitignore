@@ -8,14 +8,11 @@ bin
 share
 deprecated
 build
-variants.py
-*_variants.py
 norepo
 sferes_uploaded_code
 deps
 gmon.out
 buildoptions.log
-modules.conf
 inst_*
 quicksilver_config.json
 experiments

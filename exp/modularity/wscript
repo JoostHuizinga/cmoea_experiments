@@ -1,0 +1,71 @@
+#! /usr/bin/env python
+from waflib.Configure import conf
+import sferes
+import traceback
+import os
+import sys
+
+CURRENT_DIR = "exp/modularity"
+
+def options(opt):
+    try:
+        variants_file = os.path.join(CURRENT_DIR, "variants.py")
+        if not os.path.exists(variants_file):
+            with open(variants_file, "w") as var_file:
+                var_file.write("#!/usr/bin/env python\n")
+                var_file.write("# This is an automatically generated variants file, for creating all your experimental variants.\n")
+                var_file.write("# In contrast to most automatically generated files, feel free to edit this one; that what it's for.\n")
+                var_file.write("# The script creating this file will only be created it if it doesn't exists yet, so your file will\n")
+                var_file.write("# not be overwritten.\n")
+                var_file.write("from waflib.Configure import conf\n")
+                var_file.write("import sferes\n")
+                var_file.write("\n")
+                var_file.write("def build(bld):\n")
+                var_file.write("    uselib_ = 'TBB BOOST EIGEN PTHREAD GSL MPI BULLET OGLFT FREETYPE OPENGL GLUT'\n")
+                var_file.write("    cxxflags_kdtree = bld.get_env()['CXXFLAGS', '-I.', '-DLIBSSRCKDTREE_HAVE_BOOST']\n")
+                var_file.write("\n")
+                var_file.write("    lzw = bld.stlib(features = 'cxx cxxstlib',\n")
+                var_file.write("                    source = 'lzw.cpp',\n")
+                var_file.write("                    includes = '. ../../',\n")
+                var_file.write("                    target = 'lzw',\n")
+                var_file.write("                    uselib = uselib_)\n")
+                var_file.write("\n")
+                var_file.write("    # Basic version of the retina problem, for quickly testing that everything compiles correctly.\n")
+                var_file.write("    # Once build, run with: build/exp/modularity/retina_hnn_fg_and_gen100_pop100_nompi\n")
+                var_file.write("    # \n")
+                var_file.write("    # The supplied options are:\n")
+                var_file.write("    # - HNN: Run with HyperNEAT\n")
+                var_file.write("    # - FG_AND: Combine the left and right sub-problems with an AND operation\n")
+                var_file.write("    # - GEN100: Run for 100 generations\n")
+                var_file.write("    # - POP100: Run with a populations size of 100\n")
+                var_file.write("    # - NOMPI: Regardless of whether MPI was detected on this system, do not run this experiment with mpi\n")
+                var_file.write("    if(True):\n")
+                var_file.write("        sferes.create_variants(bld,\n")
+                var_file.write("        source = 'retina.cpp',\n")
+                var_file.write("        use = 'sferes2 lzw',\n")
+                var_file.write("        uselib = uselib_,\n")
+                var_file.write("        target = 'retina',\n")
+                var_file.write("        cxxflags = cxxflags_kdtree,\n")
+                var_file.write("        variants = ['HNN FG_AND GEN100 POP100 NOMPI'])\n")
+                var_file.write("\n")
+                var_file.write("    if(True):\n")
+                var_file.write("        sferes.create_variants(bld,\n")
+                var_file.write("        source = 'mod_robot.cpp',\n")
+                var_file.write("        use = 'sferes2 lzw OpenGLSupport oglft',\n")
+                var_file.write("        uselib = uselib_,\n")
+                var_file.write("        target = 'mod_robot',\n")
+                var_file.write("        cxxflags = cxxflags_kdtree,\n")
+                var_file.write("        variants = ['RLS MRV1 MRS3 CMOEA GEN25 POP630 BIN1'])\n")
+    except:
+        traceback.print_exc()
+
+
+def build(bld):
+    print "Loading variants"
+    try:
+        sys.path.append(CURRENT_DIR)
+        import variants
+        variants.build(bld)
+    except:
+        traceback.print_exc()
+

@@ -1,0 +1,165 @@
+The following are personal instructions for installing the JH version of Sferes with the help of homebrew.
+
+=========
+Depencies
+=========
+- boost (tested with boost-1.63.0, boost-1.58.0, boost-1.60.0, and boost-1.61.0)
+- eigen3 (tested with eigen-3.3.2, eigen-3.2.2 or below fails)
+- bullet (tested with bullet-2.86.1)
+- OpenGL
+- GLUT (tested with freeglut-3.0.0)
+- freetype2 (tested with freetype-2.7.1)
+- sdl (tested with sdl-1.2.15)
+- gsl (tested with gsl-2.3)
+- tbb (optional, tested with tbb-4.4-20161128)
+- mpi (optional: provide --no-mpi to build without mpi, tested with open-mpi-2.0.2)
+- boost-mpi (optional: provide --no-mpi to build without mpi, tested with boost-mpi-1.63.0)
+- cmake (to install pngwriter, tested with version 3.13.4) 
+- pngwriter (https://github.com/pngwriter/pngwriter)
+
+-------------------------------------
+Installing dependencies with Homebrew
+-------------------------------------
+
+Before installing Sferes, first install the following dependencies:
+
+brew install boost
+brew install eigen
+brew install bullet
+brew install freeglut
+brew install freetype
+brew install sdl
+brew install gsl
+brew install tbb
+brew install open-mpi
+brew install boost-mpi
+
+In addition, install the Xcode app through the apple-store/software-center, as the Xcode libraries are provided as part of the Xcode app, and are not installed by default.
+
+--------------------------------
+Installing dependencies with Apt
+--------------------------------
+
+apt update; apt install -y vim git
+apt-get update; apt-get install cmake
+
+In one go:
+
+apt-get update
+apt-get update; apt-get install apt-utils libopenmpi-dev libeigen3-dev libgsl-dev libtbb-dev cmake
+
+
+Separate:
+apt-get update
+apt-get install aptitude # This is to search for the other packages
+apt-get install apt-utils # Potentially aids in the installation of other packages
+apt-get install libopenmpi-dev
+apt-get install libboost-all-dev # Apparently this downloads 1.55, which may be a bit old
+# Consider installing boost from source, as this gives you an old version of boost.
+
+apt-get install libeigen3-dev
+apt-get install libfreetype6-dev
+apt-get install libgsl-dev
+apt-get install libtbb-dev 
+
+
+# apt-get install libbullet-dev # This gives you a version of bullet that is too old
+# We will have to install this manually
+git clone https://github.com/bulletphysics/bullet3.git
+mkdir -p bullet3/build_cmake
+cd bullet3/build_cmake; cmake -DUSE_DOUBLE_PRECISION=ON -DCMAKE_BUILD_TYPE=Release ..; make; make install
+cd bullet3/build_cmake; make
+cd bullet3/build_cmake; make install
+
+
+# apt install boost-mpi # Think this one is already installed
+
+# Optional:
+apt-get install freeglut3-dev 
+apt-get install libsdl-dev # Can not install, but maybe not that important?
+apt-get install libfreetype6-dev
+
+-----------------
+Install pngwriter
+-----------------
+brew install cmake
+
+git clone https://github.com/pngwriter/pngwriter.git
+
+mkdir -p pngwriter-build
+cd pngwriter-build
+
+# for own install prefix append: -DCMAKE_INSTALL_PREFIX=$HOME/somepath
+cmake ../pngwriter
+
+make -j
+
+# optional
+make test
+
+# sudo is only required for system paths
+make install
+
+
+==================
+Configuring Sferes
+==================
+
+Create a modules.conf file with the following entries:
+
+wafliboptions
+bullet
+nn2
+continue
+fastsim2
+randmaze
+oglft
+datatools
+modularity
+pngwriter
+cmoea
+nsga3
+
+If compiling without OpenGL, use:
+
+wafliboptions
+bullet
+nn2
+continue
+fastsim2
+randmaze
+datatools
+modularity
+pthread
+cmoea
+nsga3
+
+instead.
+
+For boost 1.55, you need to patch the boost filesystem header in ea.hpp as follows:
+
+#define BOOST_NO_CXX11_SCOPED_ENUMS
+#include <boost/filesystem.hpp>
+#undef BOOST_NO_CXX11_SCOPED_ENUMS
+
+
+Checkout the necessary git submodules:
+
+git submodule init
+git submodule update
+
+./waf configure
+./waf build
+./waf --exp modularity
+
+
+===================
+Configuring Eclipse
+===================
+While most of this should work out-of-the-box, there are a couple of potential things that need to be changed:
+
+- The dependencies, includes, and libraries in the main folder may interfere with eclipse. Consider removing them from that folder.
+
+- The bullet headers are included directly, meaning the bullet sub folder, probably /usr/local/include/bullet, needs to be added manually.
+
+- Sferes uses -std=c++11. To set eclipse to also consider c++11, add it as an option under: Properties -> C/C++ General -> Preprocessor Include Paths, Macros etc. -> Provides -> CDT GCC Built-in Compiler Settings.

@@ -1,0 +1,25 @@
+#! /usr/bin/env python
+import os
+from waflib.Configure import conf
+
+def options(opt):
+    pass
+
+def configure(conf): 
+    pass
+
+def build(bld):
+    print ("Entering directory `" + os.getcwd() + "/modules/opengldraw'")
+
+    bld.stlib(features = 'cxx cxxstlib',
+                source = 'Array3.cpp Point3.cpp Vector3.cpp Window.cpp',
+                includes = '. ../../',
+                target = 'opengl_draw',
+                uselib = 'BOOST OPENGL GLUT FREETYPE BULLET PNGWRITER')
+
+    bld.program(features = 'cxx',
+                source = 'opengl_draw_test.cpp',
+                use = 'sferes2 opengl_draw',
+                includes = '. ../../',
+                target = 'opengl_draw_test',
+                uselib = 'BOOST TBB OPENGL GLUT FREETYPE BULLET PNGWRITER')
