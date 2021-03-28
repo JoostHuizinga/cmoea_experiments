@@ -388,16 +388,16 @@ struct Params {
     struct evo_float {
     	// Mutation rate (chance to alter connection weight)
         SFERES_CONST float mutation_rate = 0.1f;
-        // Crossover rate (presumably unused)
-        SFERES_CONST float cross_rate = 0.5f;
+        // Crossover rate (unused)
+        SFERES_CONST float cross_rate = 0.0f;
         // Mutation type
         SFERES_CONST mutation_t mutation_type = polynomial;
-        // Crossover type
+        // Crossover type (unused)
         SFERES_CONST cross_over_t cross_over_type = sbx;
         // Mutation parameter
         SFERES_CONST float eta_m = 15.0f;
         // Cross-over parameter (not actually used in current algorithms)
-        SFERES_CONST float eta_c = 15.0f;
+        SFERES_CONST float eta_c = 0.0f;
     };
 
     struct cmoea {

@@ -104,7 +104,7 @@ def build(bld):
                              variants = ['RLS MRV2 ELEXICASE GEN=1001 POP=1000 BIN=10 BINS=1000 MAZES=100 STPGOAL OPQWALL MDIST NPAT NPCO NOMPI',
                                          ])
 
-   if(False):
+   if(True):
       sferes.create_variants(bld,
                              source = 'hard_easy_function.cpp',
                              use = 'sferes2',
@@ -116,9 +116,11 @@ def build(bld):
                                          'RLS NSGA',
                                          'RLS LEXICASE',
                                          'RLS GLEXICASE',
+                                         'RLS ELEXICASE PMAX PMAD',
                                          'RLS ELEXICASE NPCO PMAX PMAD',
                                          'RLS GNSGA',
-                                         'RLS NSGA3',])
+                                         'RLS NSGA3',
+                                         'RLS NSGA3 NPCO',])
       
 
    if(True):
@@ -133,9 +135,11 @@ def build(bld):
                                          'RLS MEAN NSGA',
                                          'RLS MEAN LEXICASE',
                                          'RLS MEAN GLEXICASE',
+                                         'RLS MEAN ELEXICASE PMAX PMAD',
                                          'RLS MEAN ELEXICASE NPCO PMAX PMAD',
                                          'RLS MEAN GNSGA',
-                                         'RLS MEAN NSGA3',])
+                                         'RLS MEAN NSGA3',
+                                         'RLS MEAN NSGA3 NPCO',])
       
    if(True):
       sferes.create_variants(bld,

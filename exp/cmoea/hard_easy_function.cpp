@@ -109,11 +109,17 @@ struct Params {
     
     // Parameters for the vector we are evolving
     struct evo_float {
+        // Crossover rate
         SFERES_CONST float cross_rate = 0.1f;
+        // Mutation rate
         SFERES_CONST float mutation_rate = 0.1f;
+        // Mutation parameter
         SFERES_CONST float eta_m = 15.0f;
+        // Crossover parameter
         SFERES_CONST float eta_c = 10.0f;
+        // Mutation type
         SFERES_CONST mutation_t mutation_type = polynomial;
+        // Crossover type
         SFERES_CONST cross_over_t cross_over_type = sbx;
     };
     
@@ -160,7 +166,11 @@ struct Params {
 
     struct nsga3
     {
-    	SFERES_CONST size_t nb_of_objs = 2;
+#if defined(PUSH_COMBINED_OBJECTIVE)
+        SFERES_CONST size_t nb_of_objs = 3;
+#else
+        SFERES_CONST size_t nb_of_objs = 2;
+#endif
     	static float ref_points_delta;
     };
 
@@ -233,7 +243,7 @@ void joint_init(){
     // Fill offset array
     float epsilon = 0;
 #if defined(ELEX_USE_OFFSET)
-    SFERES_INIT_NON_CONST_ARRAY(Params::e_lexicase, offset, Params::nsga3::nb_of_objs + 1);
+    SFERES_INIT_NON_CONST_ARRAY(Params::e_lexicase, offset, 3);
 #if defined(ELEX_OFFSET_0_20)
     epsilon = 0.2;
 #elif defined(ELEX_OFFSET_0_15)
@@ -312,9 +322,10 @@ public:
     template<typename Indiv>
     void eval(Indiv& ind) {
     	dbg::trace trace("fit", DBG_HERE);
-    	size_t nb_hard = 20;
+        
+        size_t nb_hard = 20;
+        size_t nb_easy = 10;
     	size_t nb_shared = 10;
-    	size_t nb_easy = 10;
     	size_t shared_start = nb_hard+nb_easy;
     	float hard_task_thresh = 0.9;
 
@@ -332,12 +343,12 @@ public:
     	_hard_bits = hard_bits;
     	_shared_bits = shared_bits;
 
-    	float hard_task = (hard_bits + shared_bits) / 2;
-    	float easy_task = 1 - (easy_bits + shared_bits) / 2;
+        float hard_task = (hard_bits + shared_bits) / 2;
+        float easy_task = 1 - (easy_bits + shared_bits) / 2;
         if(hard_task > hard_task_thresh){
-        	easy_task += easy_bits;
+            easy_task += easy_bits;
         }
-//
+        
         _cmoea_task_performance.push_back(easy_task);
         _cmoea_task_performance.push_back(hard_task);
         
@@ -447,10 +458,9 @@ int main(int argc, char **argv) {
     // The phenotype
     typedef phen::Parameters<gen_t, fit_t, Params> phen_t;
 
-    //Behavioral distance based only on current population.
+    // No behavioral diversity
     typedef modif::Dummy<> mod_t;
-//    typedef modif::Diversity<> mod_t;
-
+    
     // What statistics should be gathered
     typedef boost::fusion::vector<stat::StatHardEasyFunction<phen_t, Params> > stat_t;
 
