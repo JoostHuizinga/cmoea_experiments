@@ -1,11 +1,28 @@
 #! /usr/bin/env python
 from waflib.Configure import conf
 import sferes
+import os
 
 def build(bld):
    uselib_ = 'TBB BOOST EIGEN PTHREAD MPI SDL OGLFT FREETYPE PNGWRITER'
    cxxflags_kdtree = bld.get_env()['CXXFLAGS', '-I.', '-DLIBSSRCKDTREE_HAVE_BOOST']
-   
+
+   if(False):
+      sferes.create_variants(bld,
+                             source = 'maze.cpp',
+                             use = 'sferes2 fastsim',
+                             target = '',
+                             uselib = uselib_,
+                             variants = ['GEN1 POP4 MANUAL'])
+      
+   if(False):
+      sferes.create_variants(bld,
+                             source = 'maze.cpp',
+                             use = 'sferes2 fastsim',
+                             target = '',
+                             uselib = uselib_,
+                             variants = ['JHDEBUG NSGA GEN1 POP4'])
+
    if(False):
       sferes.create_variants(bld,
                              source = 'maze.cpp',
@@ -81,7 +98,7 @@ def build(bld):
                              variants = ['DBG LEXICASE GEN=10 POP=8 BIN=10 BINS=1000 MAZES=10 STPGOAL OPQWALL MDIST NOEQPOP NPAT'])
 
    # Guided NSGA-II experiment
-   if(True):
+   if(False):
       sferes.create_variants(bld,
                              source = 'maze.cpp',
                              use = 'sferes2 fastsim',
@@ -104,26 +121,35 @@ def build(bld):
                              variants = ['RLS MRV2 ELEXICASE GEN=1001 POP=1000 BIN=10 BINS=1000 MAZES=100 STPGOAL OPQWALL MDIST NPAT NPCO NOMPI',
                                          ])
 
-   if(True):
+   if(os.getenv('SFERES_VARIANT') != ''):
+      sferes.create_variants(bld,
+                             source = 'hard_easy_function.cpp',
+                             use = 'sferes2',
+                             target = 'hardeasy',
+                             uselib = uselib_,
+                             variants = [os.getenv('SFERES_VARIANT')])
+
+   if(False):
       sferes.create_variants(bld,
                              source = 'hard_easy_function.cpp',
                              use = 'sferes2',
                              target = 'hardeasy',
                              uselib = uselib_,
                              variants = [
-                                         'RLS CMOEA',
-                                         'RLS NSGA COO',
-                                         'RLS NSGA',
-                                         'RLS LEXICASE',
-                                         'RLS GLEXICASE',
-                                         'RLS ELEXICASE PMAX PMAD',
-                                         'RLS ELEXICASE NPCO PMAX PMAD',
-                                         'RLS GNSGA',
-                                         'RLS NSGA3',
-                                         'RLS NSGA3 NPCO',])
+                                         'RLS CMOEA HG=20 EG=10 SG=10',
+                                         'RLS SINGLEBIN HG=20 EG=10 SG=10',
+                                         'RLS NSGA HG=20 EG=10 SG=10',
+                                         'RLS LEXICASE HG=20 EG=10 SG=10',
+                                         'RLS ELEXICASE PMAX PMAD HG=20 EG=10 SG=10',
+                                         'RLS NSGA3 HG=20 EG=10 SG=10',
+                                         'RLS COMBT NSGA HG=20 EG=10 SG=10',
+                                         'RLS COMBT LEXICASE HG=20 EG=10 SG=10',
+                                         'RLS COMBT ELEXICASE PMAX PMAD HG=20 EG=10 SG=10',
+                                         'RLS COMBT NSGA3 HG=20 EG=10 SG=10',
+                                         ])
       
 
-   if(True):
+   if(False):
       sferes.create_variants(bld,
                              source = 'hard_easy_function.cpp',
                              use = 'sferes2',
@@ -135,13 +161,27 @@ def build(bld):
                                          'RLS MEAN NSGA',
                                          'RLS MEAN LEXICASE',
                                          'RLS MEAN GLEXICASE',
-                                         'RLS MEAN ELEXICASE PMAX PMAD',
                                          'RLS MEAN ELEXICASE NPCO PMAX PMAD',
                                          'RLS MEAN GNSGA',
-                                         'RLS MEAN NSGA3',
-                                         'RLS MEAN NSGA3 NPCO',])
+                                         'RLS MEAN NSGA3',])
+
+   if(False):
+      sferes.create_variants(bld,
+                             source = 'hard_easy_function.cpp',
+                             use = 'sferes2',
+                             target = 'hardeasy',
+                             uselib = uselib_,
+                             variants = [
+                                         'RLS MEAN CMOEA HG=20 EG=10 SG=10',
+                                         'RLS MEAN NSGA COO HG=20 EG=10 SG=10',
+                                         'RLS MEAN NSGA HG=20 EG=10 SG=10',
+                                         'RLS MEAN LEXICASE HG=20 EG=10 SG=10',
+                                         'RLS MEAN GLEXICASE HG=20 EG=10 SG=10',
+                                         'RLS MEAN ELEXICASE NPCO PMAX PMAD HG=20 EG=10 SG=10',
+                                         'RLS MEAN GNSGA HG=20 EG=10 SG=10',
+                                         'RLS MEAN NSGA3 HG=20 EG=10 SG=10',])
       
-   if(True):
+   if(False):
       sferes.create_variants(bld,
                              source = 'hard_easy_function.cpp',
                              use = 'sferes2',

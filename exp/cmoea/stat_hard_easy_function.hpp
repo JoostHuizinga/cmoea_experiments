@@ -75,7 +75,7 @@ public:
         float max_hard = 0;
         std::cout << "Printing population" << std::endl;
         for (size_t i = 0; i < pop.size(); ++i){
-        	pop[i]->fit().printBits();
+//        	pop[i]->fit().printBits();
             if(pop[i]->fit().objs()[0] > max_easy){
             	max_easy = pop[i]->fit().objs()[0];
             }
@@ -95,6 +95,15 @@ public:
         printer.dataStart();
         printer.add(true, "#gen", ea.gen());
         printer.add(true, "b_fit", best_individual->fit().value());
+        printer.add(true, "b_easy", best_individual->fit().getCmoeaObj(0));
+        printer.add(true, "b_hard", best_individual->fit().getCmoeaObj(1));
+        printer.add(true, "max_easy", max_easy);
+        printer.add(true, "max_hard", max_hard);
+        for (size_t i = 0; i < pop.size(); ++i){
+        	printer.add(true, "i" + std::to_string(i) + "_easy", pop[i]->fit().getCmoeaObj(0));
+        	printer.add(true, "i" + std::to_string(i) + "_hard", pop[i]->fit().getCmoeaObj(1));
+        	printer.add(true, "i" + std::to_string(i) + "_fit", pop[i]->fit().value());
+        }
         printer.dataPrint(this->_log_file);
         dbg::out(dbg::info, "stat") << "Refresh finished" << std::endl;
         

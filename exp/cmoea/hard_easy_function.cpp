@@ -26,6 +26,15 @@
 #define PUSH_COMBINED_OBJECTIVE
 #endif
 
+#if defined(COMBT)
+#define PUSH_COMBINED_OBJECTIVE
+#endif
+
+#if defined(SINGLEBIN)
+#define NSGA
+#define COMBINED_OBJECTIVE_ONLY
+#endif
+
 #if defined(COO)
 #define COMBINED_OBJECTIVE_ONLY
 #endif
@@ -59,6 +68,31 @@
 
 #if defined(PMAD)
 #define POOL_MAD
+#endif
+
+// Hard genes
+#ifndef HG
+#define HG 20
+#endif
+
+// Shared genes
+#ifndef SG
+#define SG 10
+#endif
+
+// Easy genes
+#ifndef EG
+#define EG 10
+#endif
+
+// Local Optima Pairs
+#ifndef LOP
+#define LOP 1
+#endif
+
+// Local Optima Magnitude
+#ifndef LOM
+#define LOM 0.25
 #endif
 
 // Include standard
@@ -109,17 +143,15 @@ struct Params {
     
     // Parameters for the vector we are evolving
     struct evo_float {
-        // Crossover rate
+#if defined(NOCROSS)
+    	SFERES_CONST float cross_rate = 0.0f;
+#else
         SFERES_CONST float cross_rate = 0.1f;
-        // Mutation rate
+#endif
         SFERES_CONST float mutation_rate = 0.1f;
-        // Mutation parameter
         SFERES_CONST float eta_m = 15.0f;
-        // Crossover parameter
         SFERES_CONST float eta_c = 10.0f;
-        // Mutation type
         SFERES_CONST mutation_t mutation_type = polynomial;
-        // Crossover type
         SFERES_CONST cross_over_t cross_over_type = sbx;
     };
     
@@ -135,7 +167,13 @@ struct Params {
 
     struct cmoea {
         // Size of every CMOEA bin
-        static const unsigned bin_size = 40;
+#if defined(POP120)
+    	static const unsigned bin_size = 40;
+#elif defined(POP240)
+        static const unsigned bin_size = 80;
+#elif defined(POP300)
+        static const unsigned bin_size = 100;
+#endif
         
         // Number of CMOEA bins
         static const unsigned nb_of_bins = 3; // = (2 ^ numberOfTasks - 1)
@@ -167,38 +205,63 @@ struct Params {
     struct nsga3
     {
 #if defined(PUSH_COMBINED_OBJECTIVE)
-        SFERES_CONST size_t nb_of_objs = 3;
+    	SFERES_CONST size_t nb_of_objs = 3;
 #else
-        SFERES_CONST size_t nb_of_objs = 2;
+    	SFERES_CONST size_t nb_of_objs = 2;
 #endif
     	static float ref_points_delta;
     };
 
     /* Parameters for the population */
     struct pop {
+#if defined(POP120)
         // Required by sferes, but ignored by CMOEA
         SFERES_CONST unsigned size = 120;
-        
         // The number of individuals create to initialize the population
         SFERES_CONST unsigned init_size = 120;
+        // The number of individuals created every generation
+        SFERES_CONST unsigned select_size = 120;
+#elif defined(POP240)
+        // Required by sferes, but ignored by CMOEA
+        SFERES_CONST unsigned size = 240;
+        // The number of individuals create to initialize the population
+        SFERES_CONST unsigned init_size = 240;
+        // The number of individuals created every generation
+        SFERES_CONST unsigned select_size = 240;
+#elif defined(POP300)
+        // Required by sferes, but ignored by CMOEA
+        SFERES_CONST unsigned size = 300;
+        // The number of individuals create to initialize the population
+        SFERES_CONST unsigned init_size = 300;
+        // The number of individuals created every generation
+        SFERES_CONST unsigned select_size = 300;
+#endif
+
         
         // The maximum number of individuals to try an create at the same time.
         SFERES_CONST unsigned max_batch_size = 1024;
 
-        // The number of individuals created every generation
-        SFERES_CONST unsigned select_size = 120;
+
         
         // The number of generations for which to run the algorithm
+#if defined(GEN1000)
+        SFERES_CONST unsigned nb_gen = 1000;
+#elif defined(GEN5000)
+        SFERES_CONST unsigned nb_gen = 5000;
+#elif defined(GEN2500)
+        SFERES_CONST unsigned nb_gen = 2500;
+#else
         SFERES_CONST unsigned nb_gen = 500;
+#endif
         
         // A multiplier on the number of individuals to create a generation 1.
         SFERES_CONST int initial_aleat = 1;
 
         // Frequency at which to dump the archive
-        static const int dump_period = 200;
+        static const int dump_period = 20000;
         
         // Fequency at which to write a checkpoint
-        static const int checkpoint_period = 200;
+        static const int checkpoint_period = 20000;
     };
 
     struct ea {
@@ -243,7 +306,7 @@ void joint_init(){
     // Fill offset array
     float epsilon = 0;
 #if defined(ELEX_USE_OFFSET)
-    SFERES_INIT_NON_CONST_ARRAY(Params::e_lexicase, offset, 3);
+    SFERES_INIT_NON_CONST_ARRAY(Params::e_lexicase, offset, Params::nsga3::nb_of_objs + 1);
 #if defined(ELEX_OFFSET_0_20)
     epsilon = 0.2;
 #elif defined(ELEX_OFFSET_0_15)
@@ -285,7 +348,7 @@ float mod_rastrigin(Indiv& x, size_t start, size_t end){
 	float n = (float) (end  - start);
 	float result = 0;
 	for(size_t i=start; i<end; ++i){
-		result += 0.25 + 0.5 * x.data(i) - 0.25 * cos(3 * M_PI * x.data(i));
+		result += LOM + (1 - (2*LOM)) * x.data(i) - LOM * cos((1 + 2*LOP) * M_PI * x.data(i));
 	}
 	return result / n;
 }
@@ -322,10 +385,9 @@ public:
     template<typename Indiv>
     void eval(Indiv& ind) {
     	dbg::trace trace("fit", DBG_HERE);
-        
-        size_t nb_hard = 20;
-        size_t nb_easy = 10;
-    	size_t nb_shared = 10;
+    	size_t nb_hard = HG;
+    	size_t nb_shared = SG;
+    	size_t nb_easy = EG;
     	size_t shared_start = nb_hard+nb_easy;
     	float hard_task_thresh = 0.9;
 
@@ -343,12 +405,16 @@ public:
     	_hard_bits = hard_bits;
     	_shared_bits = shared_bits;
 
-        float hard_task = (hard_bits + shared_bits) / 2;
-        float easy_task = 1 - (easy_bits + shared_bits) / 2;
+    	float hard_task = (hard_bits + shared_bits) / 2;
+    	float easy_task = 1 - (easy_bits + shared_bits) / 2;
         if(hard_task > hard_task_thresh){
-            easy_task += easy_bits;
+#if defined(EPSDT)
+        	easy_task += (easy_bits + shared_bits) / 2;
+#else
+        	easy_task += easy_bits;
+#endif
         }
-        
+//
         _cmoea_task_performance.push_back(easy_task);
         _cmoea_task_performance.push_back(hard_task);
         
@@ -442,6 +508,7 @@ SFERES_DECLARE_NON_CONST_ARRAY(Params::e_lexicase, offset);
 /* Sets up and runs the experiment. */
 int main(int argc, char **argv) {
     std::cout << "Entering main: " << std::endl;
+    std::cout << "Hard genes: " << HG  << " Easy genes: " << EG << " Shared Genes: " << SG << std::endl;
     
     time_t t = time(0) + ::getpid();
     std::cout<<"seed: " << t << std::endl;
@@ -453,14 +520,15 @@ int main(int argc, char **argv) {
     typedef ExampleCmoeaFit<Params> fit_t;
 
     // The genotype.
-    typedef gen::EvoFloat<40, Params> gen_t;
+    typedef gen::EvoFloat<HG + EG + SG, Params> gen_t;
     
     // The phenotype
     typedef phen::Parameters<gen_t, fit_t, Params> phen_t;
 
-    // No behavioral diversity
+    //Behavioral distance based only on current population.
     typedef modif::Dummy<> mod_t;
-    
+//    typedef modif::Diversity<> mod_t;
+
     // What statistics should be gathered
     typedef boost::fusion::vector<stat::StatHardEasyFunction<phen_t, Params> > stat_t;
 

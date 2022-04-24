@@ -6,13 +6,13 @@ Huizinga J, [Clune J](http://jeffclune.com). (2018). ["Evolving Multimodal Robot
 
 **If you use this software in an academic article, please consider citing:**
 
-    @article{huizinga2018evolving, 
-        title={Evolving Multimodal Robot Behavior via Many Stepping Stones with the Combinatorial Multi-Objective Evolutionary Algorithm}, 
-        author={Huizinga, Joost and Clune, Jeff}, 
-        journal={arXiv preprint arXiv:1807.03392}, 
-        year={2018}
+    @article{huizinga2021evolving,
+        title={Evolving multimodal robot behavior via many stepping stones with the combinatorial multi-objective evolutionary algorithm},
+        author={Huizinga, Joost and Clune, Jeff},
+        journal={Evolutionary computation},
+        pages={1--34}
+        year={2021}
     }
-
 
 ## 1. Installation
 
@@ -25,7 +25,7 @@ And configure and build the experiment:
 
     ./waf configure --bullet-double-precision
     ./waf --exp cmoea
-	./waf --exp modularity
+    ./waf --exp modularity
 
 The function and maze domain experiments can be found in:
 
@@ -33,7 +33,7 @@ The function and maze domain experiments can be found in:
 
 The robotics experiments can be found in:
 
-   build/exp/modularity
+    build/exp/modularity
 
 ## 2. Licenses
 The code in this repository is licensed under the CeCILL License.
